@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block nav %}
+<div class="d-flex justify-content-center">
+	<a class="btn btn-danger text-light" onclick="window.close();">Close</a>
+</div>
+{% endblock nav %}
+
+
+{% block mainsection %}
+<h1 class="text-center mb-4">Ticket: {{ ticket }}</h1>
+
+<div class="container">
+	<div class="row">
+		<div class="col-6">
+			<ul class="list-group mb-4">
+				<li class="list-group-item"><strong>Description:</strong> {{ ticket.description }}</li>
+				<li class="list-group-item"><strong>Comment</strong><br>{{ ticket.comment }}</li>
+			</ul>
+		</div>
+		<div class="col-6">
+			<ul class="list-group">
+				<li class="list-group-item"><strong>Log</strong><br> {{ ticket.log }}</li>
+			</ul>
+		</div>
+	</div>
+</div>
+{% endblock mainsection %}

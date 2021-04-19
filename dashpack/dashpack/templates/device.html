@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block nav %}
+<div class="d-flex justify-content-center">
+    <a class="btn btn-danger text-light" onclick="window.close();">Close</a>
+</div>
+{% endblock nav %}
+
+{% block mainsection %}
+<h1 class="text-center mb-4">Device {{ device }}</h1>
+
+<div class="container">
+    <ul class="list-group mb-4">
+        <li class="list-group-item"><strong>Name:</strong> {{ device.name }}</li>
+        <li class="list-group-item"><strong>Client:</strong> {{ device.client.name }}</li>
+        <li class="list-group-item"><strong>Category:</strong> {{ device.category }}</li>
+        <li class="list-group-item"><strong>Entry date:</strong> {{ device.entry_date }}</li>
+    </ul>
+</div>
+{% endblock mainsection %}

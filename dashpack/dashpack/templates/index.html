@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block script %}
+<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.bootstrap4.min.js' %}"></script>
+<script>
+    function load_table() {
+        $.ajax({
+            type: "GET",
+            url: "{{ url }}",
+            data: {
+                "client": $("#client").val()
+            },
+            error: function (data) {
+                console.log("Error loading client data " + JSON.stringify(data));
+            },
+            success: function (data) {
+                $("#data_load").empty().append(data);
+                $("#table").DataTable({
+                    paging: false,
+                    searching: false,
+                    info: false,
+                    "order": [[ 5, "desc" ]]
+                });
+            }
+        });
+    }
+</script>
+{% endblock script %}
+
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/dataTables.bootstrap4.min.css' %}">
+{% endblock style %}
+
+{% block nav %}
+<div class="input-group">
+    <select class="custom-select" id="client" name="client">
+        <option {% if not selected_client %}selected{% endif %}>Select a client</option>
+        {% for client in clients %}
+        <option value="{{ client }}" {% if client == selected_client %}selected{% endif %}>
+            {{ client.name }}</option>
+        {% endfor %}
+    </select>
+
+    <div class="input-group-append">
+        <button class="btn btn-primary" type="button" onclick="load_table();">Load data</button>
+    </div>
+</div>
+{% endblock nav %}
+
+{% block mainsection %}
+
+<div id="data_load" class="col-12">
+    <h1 class="display-3 text-center mb-4">Global stats</h1> 
+
+    <h6 class="lead text-center mb-2">Select a client for more details</h6>
+
+    <div id="graficos" class="col-12 d-flex justify-content-around mb-4 py-4">
+        <canvas class="col-6" id="tickets_graph"></canvas>
+        <canvas class="col-6" id="services_graph"></canvas>
+    </div>
+
+    <script>
+        var months = '{{ months }}';
+        var tickets_graph = new Chart($('#tickets_graph'), {
+            type: 'bar',
+            data: {
+                labels: months.replace(/&#x27;/g, "").replace(/\[/g, "").replace(/\]/g, "").split(","),
+                datasets: [{
+                    label: '# of tickets',
+                    data: '{{ month_tickets }}',
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                legend: {
+                    display: false
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        var services_graph = new Chart($('#services_graph'), {
+            type: 'radar',
+            data: {
+                labels: {{ services_labels }},
+                datasets: [{
+                    label: '# of tickets by service',
+                    data: '{{ services_data }}',
+                    backgroundColor: ['rgba(255, 206, 86, 0.2)'],
+                    borderColor: ['rgba(255, 206, 86, 1)'],
+                    borderWidth: 2,
+                    pointBorderColor: ['rgba(255, 206, 86, 1)'],
+                    pointBackgroundColor: ['rgba(255, 206, 86, 1)']
+                }]
+            }
+        });
+    </script>
+</div>
+
+{% if no_data %}
+
+{% endif %}
+
+{% endblock mainsection %}
+
+{% block extra %}
+{% endblock extra %}

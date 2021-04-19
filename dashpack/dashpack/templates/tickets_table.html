@@ -1,0 +1,146 @@
+{% if tickets %}
+<div id="graphs" class="col-12 d-flex justify-content-around mb-4">
+    <canvas class="col-4" id="tickets_graph"></canvas>
+    <canvas class="col-4" id="services_graph"></canvas>
+    <canvas class="col-4" id="devices_graph"></canvas>
+</div>
+
+<div class="mt-5 mb-3 col-6 mx-auto">
+    <input type="text" class="form-control" id="search_filter" placeholder="Filtrar">
+</div>
+
+<table id="table" class="table table-hover">
+    <caption>Tickets for selected client</caption>
+
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">Ticket ID</th>
+            <th scope="col">Device ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Service</th>
+            <th scope="col">Date</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for ticket in tickets %}
+        <tr class="content_filter">
+            <th scope="row"><a href="{% url 'ticket' ticket %}" target="_blank">{{ ticket|lower }}</a></th>
+            <td><a href="{% url 'device' ticket.get_device %}" target="_blank"
+                    style="text-transform: capitalize">{{ ticket.device|lower }}</a></td>
+            <td style="text-transform: capitalize">{{ ticket.device.name|lower }}</td>
+            <td style="text-transform: capitalize">{{ ticket.description|lower }}</td>
+            <td style="text-transform: capitalize">{{ ticket.service|lower }}</td>
+            <td>{{ ticket.date|date:"Y/m/d" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    var months = '{{ months }}'.replace(/&#x27;/g, "").replace(/\[/g, "").replace(/\]/g, "").split(",");
+    var tickets_graph = new Chart($('#tickets_graph'), {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [{
+                label: '# of tickets',
+                data: {{ month_tickets }},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            legend: {
+                display: false
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+
+    var services_graph = new Chart($('#services_graph'), {
+        type: 'radar',
+        data: {
+            labels: {{ services_labels }},
+            datasets: [{
+                label: '# of tickets by service',
+                data: {{ services_data }},
+                backgroundColor: ['rgba(255, 206, 86, 0.2)'],
+                borderColor: ['rgba(255, 206, 86, 1)'],
+                borderWidth: 2,
+                pointBorderColor: ['rgba(255, 206, 86, 1)'],
+                pointBackgroundColor: ['rgba(255, 206, 86, 1)']
+            }]
+        }
+    });
+
+    var devices_number = '{{ devices_number }}'.replace(/&#x27;/g, "").replace(/\[/g, "").replace(/\]/g, "").split(",");
+    var devices_name = '{{ devices_name }}'.replace(/&#x27;/g, "").replace(/\[/g, "").replace(/\]/g, "").split(",");
+    var devices_graph = new Chart($('#devices_graph'), {
+        type: 'polarArea',
+        data: {
+            labels: devices_name,
+            datasets: [{
+                data: devices_number,
+                borderWidth: 1,
+                backgroundColor: generate_rgb()
+            }]
+        }
+    });
+
+    function generate_rgb() {
+        var rgb_array = []
+        for (var i = 0; i < devices_number.length; i++) {
+            var o = Math.round, r = Math.random, s = 255;
+            rgb_array.push('rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ', 0.2)');
+        }
+        return rgb_array
+    }
+
+    $("#search_filter").keyup(function () {
+        $(".content_filter").each(function () {
+            $(this).addClass("d-none");
+        });
+
+        $(".content_filter:contains(" + $("#search_filter").val().toLowerCase() + ")").each(function () {
+            $(this).removeClass("d-none");
+        });
+
+        if ($("#search_filter").val() == "") {
+            $(".content_filter").each(function () {
+                $(this).removeClass("d-none");
+            });
+        }
+    });
+</script>
+{% else %}
+<div class="col-12 d-flex justify-content-around mb-4">
+    <div class="mt-5 p-3 col-md-6 d-flex align-items-center flex-column border border-danger">
+        <h1 class="mb-2">No data</h1>
+       
+        <span>No data for selected client.</span>
+    </div>
+</div>
+{% endif %}
